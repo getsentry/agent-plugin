@@ -36,9 +36,8 @@ The span `op` is `gen_ai.{operation}` — `chat`, `embeddings`, `generate_conten
 `invoke_agent Weather Agent`, `execute_tool get_weather`,
 `handoff from triage to billing`. Attributes accept primitives only; arrays/objects are
 JSON-stringified. The canonical attribute set is
-[`semantics/gen_ai.md`](../semantics/gen_ai.md) (map:
-[`semantics.md`](../semantics.md)) — the SDK docs can lag, and deprecated
-attributes are omitted from that tree on purpose.
+[`semantics/gen_ai.md`](../semantics/gen_ai.md) — the SDK docs can lag, and
+deprecated attributes are omitted from that reference on purpose.
 
 ## Conversations
 

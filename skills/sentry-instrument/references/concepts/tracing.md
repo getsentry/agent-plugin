@@ -42,12 +42,12 @@ A span also carries its profile, the bridge down to the function level.
   auto-instrumented), add custom spans for meaningful business operations, and keep span
   names **low-cardinality and templated** (`GET /users/:id`, not `/users/12345`) with
   searchable attributes rather than baking values into the name.
-  Follow Sentry’s semantic conventions for span and attribute names — start at
-  [`semantics.md`](../semantics.md) and open only the domain you need.
+  Follow Sentry’s semantic conventions for span and attribute names. The core
+  [`SKILL.md`](../../SKILL.md#semantic-conventions) lists the domain references; open
+  only the one you need.
 
 ## Related
 
-- [`semantics.md`](../semantics.md) — attribute key lookup by domain.
 - [`profiling.md`](profiling.md)
 - [`reduce-volume.md`](reduce-volume.md) — sampling is the main lever.
 - [`search-query-language.md`](../search-query-language.md) — span properties for
