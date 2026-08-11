@@ -35,9 +35,10 @@ The span `op` is `gen_ai.{operation}` — `chat`, `embeddings`, `generate_conten
 **name** repeats the operation with its subject: `chat gpt-4o`,
 `invoke_agent Weather Agent`, `execute_tool get_weather`,
 `handoff from triage to billing`. Attributes accept primitives only; arrays/objects are
-JSON-stringified. The canonical attribute set is the
-[Sentry gen_ai conventions](https://getsentry.github.io/sentry-conventions/attributes/gen_ai/)
-— the SDK docs can lag, and attributes marked deprecated there should not be set.
+JSON-stringified. The canonical attribute set is
+[`semantics/gen_ai.md`](../semantics/gen_ai.md) (map:
+[`semantics.md`](../semantics.md)) — the SDK docs can lag, and deprecated
+attributes are omitted from that tree on purpose.
 
 ## Conversations
 

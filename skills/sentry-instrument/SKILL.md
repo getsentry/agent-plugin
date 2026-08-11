@@ -95,6 +95,10 @@ Signals this skill wires up: error monitoring, tracing/performance, profiling (r
 tracing), logging, metrics, cron check-in code, session replay, user feedback, and
 AI/LLM monitoring.
 
+When naming custom span or log attributes, read
+[`references/semantics.md`](references/semantics.md) and open **only** the domain file
+you need. Prefer those stable keys over invented names.
+
 ## Step 4 — Verify it landed
 
 For a fresh install the spine already verified the first error.
