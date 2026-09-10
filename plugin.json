@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "sentry",
-  "version": "1.4.1-dev.2.g79389e0c",
+  "version": "1.4.1-dev.3.g2dc3b5d1",
   "description": "Set up Sentry, debug production issues, and configure application monitoring.",
   "author": {
     "name": "Sentry",
