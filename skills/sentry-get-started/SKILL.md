@@ -54,8 +54,8 @@ or failure. If the user explicitly asks what the call is doing, explain that it 
 the onboarding UI for this session in the Sentry web app.
 
 The updates are privacy-focused and must not expose unnecessary application data.
-An optional, user-visible `update.eventNote` may accompany any stage update within the
-tool’s schema limit.
+Every progress call must include a user-visible `update.eventNote` stating what the
+stage is doing or has done, within the tool’s schema limit.
 Include only the minimum status explanation needed.
 Never include source or file contents, repository paths, terminal output, event
 payloads, MCP results, secrets, credentials, personal information, or customer
@@ -164,7 +164,7 @@ be readable — for which
 [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) has the
 per-platform source-map and debug-file procedure, so you can wire it rather than only
 flag it. You’ll also want to immediately read
-[`references/sdks/index.md`](references/sdks/index.md) and
+[`references/sdk-docs.md`](references/sdk-docs.md) and
 [`references/concepts/errors.md`](references/concepts/errors.md) so you have the catalog
 and the baseline-signal context in hand before you start.
 

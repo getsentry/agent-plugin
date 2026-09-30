@@ -1,6 +1,6 @@
 ---
 name: sentry-instrument
-description: Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal — error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring (agent runs, token cost, and conversations for OpenAI, Anthropic, Vercel AI, LangChain, Google GenAI, Pydantic AI, and Laravel AI). Use to add Sentry to a project or to capture more than errors.
+description: Instrument an application with Sentry — detect the platform, install and initialize the SDK if needed, and wire up any signal — error monitoring, tracing/performance, logging, metrics, profiling, session replay, user feedback, cron check-ins, and AI/LLM monitoring (agent runs, token cost, and conversations for OpenAI, Anthropic, Vercel AI, LangChain, Google GenAI, Pydantic AI, Laravel AI, Eve, Flue, the Cloudflare Agents SDK, and Workers AI). Use to add Sentry to a project or to capture more than errors.
 license: Apache-2.0
 ---
 # Sentry Instrument
@@ -9,8 +9,8 @@ Get Sentry capturing a signal in an application — from a brand-new install (fi
 to adding any later signal to a project that already has Sentry.
 This is the single playbook for “wire Sentry up to capture X.”
 
-The bulk of the detail lives in references this skill pulls in: per-platform code under
-[`references/sdks/`](references/sdks/index.md), per-signal strategy under
+The bulk of the detail lives elsewhere: per-platform code in the Sentry docs (mapped in
+[`references/sdk-docs.md`](references/sdk-docs.md)), per-signal strategy under
 [`references/concepts/`](references/concepts/choosing-a-signal.md), project provisioning
 in [`references/new-project.md`](references/new-project.md), and the confirm-it-works
 loop in [`references/setup-verification.md`](references/setup-verification.md).
@@ -33,46 +33,56 @@ Decide what you’re actually doing; it gates how much you run.
 
 | Scope | When | What runs |
 | --- | --- | --- |
-| **First error** | Brand-new install, no Sentry yet | Provision + install + the SDK’s recommended default `init` (**errors + tracing**), then verify a real error. Defer *additional* signals (logging, profiling, replay, metrics, …). |
-| **Add a signal** | Sentry already installed; user wants one more signal | Skip provisioning/install. Jump straight to that one signal. |
-| **Full setup** | “Set it up properly / sensible defaults” | Run first error (which already establishes errors + tracing), then propose the rest of a baseline (releases, source maps, and any signals that fit the app) and add what the user accepts. |
+| **First error** | Brand-new install, no Sentry yet | Detect setup ownership, then provision and install the selected base. Verify a real error when the path supports it; disclose any trace-only limitation. Defer *additional* signals (logging, profiling, replay, metrics, …). |
+| **Add a signal** | Sentry already installed; user wants one more signal | Preserve the base install, run setup-ownership detection, then wire only that signal. |
+| **Full setup** | “Set it up properly / sensible defaults” | Run the ownership-aware base setup, then propose the rest of a baseline (releases, source maps, and any signals that fit the app) and add what the user accepts. |
 
 Never over-instrument — wiring up logging, session replay, profiling, metrics, etc.
 upfront when the user only asked to get Sentry working is doing more than they asked
 for. (The base `init` includes tracing — that’s the SDK’s recommended default, not
 over-instrumentation.)
 
-## Step 2 — Get errors working first (fresh installs)
+## Step 2 — Detect setup ownership and install
 
-For **first-error** and **full setup** scope — there’s no Sentry yet, so the project
-needs a base install before any additional signal.
-**Run [`references/first-error-setup.md`](references/first-error-setup.md) end to end**
-— the shared spine: detect the platform, provision a project, install the SDK’s
-recommended default `init` (errors + tracing — take the reference’s default as written,
-don’t pare it back to errors-only), verify a real error lands, push to production, and
-confirm stack traces will be readable.
-You’ll also want to immediately read
-[`references/sdks/index.md`](references/sdks/index.md) and
-[`references/concepts/errors.md`](references/concepts/errors.md) so you have the catalog
-and the baseline-signal context in hand before you start.
+Run setup-ownership detection for **every scope**, including add-a-signal:
 
-For **add a signal** scope, Sentry is already installed with a DSN — skip this step
-entirely and go to Step 3.
+- For **first-error** and **full setup**, run **Step 1 only** of
+  [`references/first-error-setup.md`](references/first-error-setup.md).
+- For **add a signal**, detect and confirm the platform from
+  [`references/sdk-docs.md`](references/sdk-docs.md) without reinstalling Sentry.
 
-Under **first-error** scope you’re done after the spine.
-Under **full setup**, continue: the spine already set up errors + tracing and flagged
-source maps, so propose the rest of a solid baseline (releases, plus any signals that
-fit the app) and wire what the user accepts via Step 3. If they take the stack-trace
-half, [`references/debug-artifacts/index.md`](references/debug-artifacts/index.md)
-carries the per-platform artifact upload — source maps for JS, dSYM/ProGuard/R8 for
-native and mobile.
+Fetch the platform’s docs pages; inspect package manifests and existing Sentry,
+OpenTelemetry, and framework instrumentation.
+Before a fresh install or any AI-monitoring change, read
+[`references/concepts/ai-monitoring.md`](references/concepts/ai-monitoring.md) and apply
+its setup-ownership rules based on project state — not request wording.
+Choose one owner for each AI runtime, preserve existing instrumentation where possible,
+and never create a second Sentry initialization, OTLP exporter, or AI span producer.
+
+For **add a signal**, after completing any framework-owned handoff above, preserve the
+selected base install and go to Step 3 for the requested signal.
+
+For **first-error** and **full setup**, when neither framework owns setup, continue with
+**Steps 2 onward** of `first-error-setup.md`: provision a project, install the SDK’s
+recommended default `init` (errors + tracing), verify a real error, push to production,
+and confirm stack traces will be readable.
+Also read [`references/concepts/errors.md`](references/concepts/errors.md) for the
+baseline-signal context.
+
+Under **first-error** scope you’re done after the selected setup and its verification.
+Under **full setup**, continue from the signals the selected setup already covers:
+propose the rest of a solid baseline (releases, plus any signals that fit the app) and
+wire what the user accepts via Step 3. Respect the selected setup owner from the AI
+monitoring ownership rules; do not add a second SDK/exporter unless the user chooses to
+switch routes. If they take the stack-trace half,
+[`references/debug-artifacts/index.md`](references/debug-artifacts/index.md) carries the
+per-platform artifact upload — source maps for JS, dSYM/ProGuard/R8 for native and
+mobile.
 
 ## Step 3 — Wire the signal(s)
 
-If you came straight here under **add a signal** scope, you haven’t detected the
-platform yet — read [`references/sdks/index.md`](references/sdks/index.md), identify the
-platform from project files, **confirm with the user**, and open that platform’s
-`references/sdks/<slug>/index.md`. (Fresh installs already did this in the spine.)
+Use the platform confirmed during Step 2 and its page from
+[`references/sdk-docs.md`](references/sdk-docs.md).
 
 For each signal the scope calls for:
 
@@ -83,17 +93,23 @@ For each signal the scope calls for:
    sample-rate philosophy, naming, and pitfalls — including
    [`references/concepts/ai-monitoring.md`](references/concepts/ai-monitoring.md) for
    the `gen_ai.*` model, conversation-ID rules, token/cost accounting, and the AI
-   sampling and PII strategy (the per-platform code then lives in that platform’s
-   `ai-monitoring.md`). **Skip this when the user already said “add tracing, you pick
-   the defaults”** — go straight to the HOW.
-2. **HOW.** Read the platform’s signal file — `references/sdks/<slug>/<signal>.md` (e.g.
-   `references/sdks/nextjs/tracing.md`) — and apply the code.
-   The platform `index.md` feature catalog links each supported signal and marks
-   unsupported ones.
+   sampling and PII strategy (the per-platform code then lives in that platform’s AI
+   monitoring docs). **Skip this when the user already said “add tracing, you pick the
+   defaults”** — go straight to the HOW.
+2. **HOW.** Fetch the platform’s docs page for the signal — follow its link from the
+   platform page, as [`references/sdk-docs.md`](references/sdk-docs.md) describes — and
+   apply the code.
 
 Signals this skill wires up: error monitoring, tracing/performance, profiling (requires
 tracing), logging, metrics, cron check-in code, session replay, user feedback, and
 AI/LLM monitoring.
+
+For AI/LLM monitoring, keep input and output capture enabled by default because the
+Agent Tracing transcript and debugging workflow rely on prompts, responses, tool
+arguments, and tool results.
+If the user raises a privacy, security, compliance, or volume concern, follow the docs
+to disable or scope capture instead.
+Preserve any capture restrictions they have already chosen.
 
 ### Semantic conventions
 
@@ -175,6 +191,18 @@ dashboard.”
 After the first error or a new signal is confirmed, offer concrete follow-ups without
 auto-running them:
 
+- After setting up AI/LLM monitoring with a JavaScript/TypeScript Sentry SDK, ask
+  whether the user wants to control which AI inputs and outputs the SDK sends, unless
+  they have already stated their preference.
+  Link the detected platform’s `dataCollection` options:
+  `https://docs.sentry.io/platforms/javascript/guides/<guide>/configuration/options/#dataCollection`
+  (for example, `cloudflare` for Workers and Pages, `nextjs` for Next.js, or `node` for
+  Node.js). Use the
+  [JavaScript data collection options](https://docs.sentry.io/platforms/javascript/configuration/options/#dataCollection)
+  when no platform-specific guide applies.
+  Keep this optional; change capture only if requested.
+  Do not offer this JavaScript SDK option for Python, PHP, unknown SDKs, or
+  framework-owned OTLP setups without a JavaScript Sentry SDK.
 - Ship it to production.
 - Add a signal — logging, session replay, or profiling are common next steps (tracing is
   already in the base `init`).
